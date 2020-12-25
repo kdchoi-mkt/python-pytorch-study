@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore input file
+*.pkl
+*.txt
+
+# Ignore tutorial because it is not refined
+/tutorial
