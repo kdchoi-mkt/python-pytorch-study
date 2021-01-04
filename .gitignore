@@ -135,3 +135,4 @@ dmypy.json
 
 # Ignore tutorial because it is not refined
 /tutorial
+*/private_ipynb
