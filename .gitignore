@@ -131,6 +131,7 @@ dmypy.json
 # Ignore input file
 *.pkl
 *.txt
+*.csv
 
 # Ignore tutorial because it is not refined
 /tutorial
