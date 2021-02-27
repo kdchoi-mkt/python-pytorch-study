@@ -35,7 +35,7 @@ class BoardgameMiner():
         self.total_info = dict()
 
     def crawl_page(self):
-        for page in self._track(range(1, self.page_max + 1), leave = False):
+        for page in self._track(range(1, self.page_max + 1), leave = True):
             self.total_info.update(self._crawl_single_page(page))
         
         return self.total_info
@@ -57,7 +57,7 @@ class BoardgameMiner():
         
         boardgame_info = dict()
         
-        for tag in self._track(parser.select(TABLE_TAG), leave = False):
+        for tag in self._track(parser.select(TABLE_TAG), leave = False, position = 0):
             name, description = self._crawl_single_page_row(tag)
             boardgame_info[name] = description
             
@@ -78,7 +78,7 @@ class BoardgameMiner():
         return name, {'link': link, 'simple_description': simple_description, 'uid': uid}
     
     def _crawl_single_boardgame(self, uid):
-        boardgame_info = requests.get(f"{self.api_link}/{uid}")
+        boardgame_info = requests.get(f"{self.api_link}/{uid}?{QUERY_STR}")
         bg_parser = BeautifulSoup(boardgame_info.text, 'html.parser')
         
         description = bg_parser.select_one(DESCRIPTION_TAG).text
