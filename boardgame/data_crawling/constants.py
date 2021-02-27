@@ -9,4 +9,6 @@ MECHANIC_TAG = 'boardgamemechanic'
 CATEGORY_TAG = 'boardgamecategory'
 THEME_TAG = 'boardgamesubdomain'
 
+QUERY_STR = 'stats=1'
+# The following tags require the `stats=1` query string
 OWNER_TAG = 'owned'
