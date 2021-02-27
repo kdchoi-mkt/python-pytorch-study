@@ -2,9 +2,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Item Description Based Recommendation System
 class DescriptionBasedRS(TfidfVectorizer):
-    def __init__(self, data_frame, description_column, **kwarg):
+    def __init__(self, data_frame, description_column, name_column, **kwarg):
         super().__init__(**kwarg)
         self.data_frame = data_frame
+        self.name_col = name_column
         self.description_col = description_column
         self.vectorized_form = self.fit_transform(data_frame[description_column])
 
@@ -44,8 +45,8 @@ class DescriptionBasedRS(TfidfVectorizer):
         return similar_df.sort_values(['similarity'], ascending = False)
 
     def _find_index(self, name):
-        if name not in self.data_frame[self.description_col].to_list():
+        if name not in self.data_frame[self.name_col].to_list():
             raise ValueError(f"The boardgame name {name} does not in the database. Try again!")
 
-        target_data = self.data_frame.query(f"{self.description_col} == '{name}'")
+        target_data = self.data_frame.query(f"{self.name_col} == '{name}'")
         return target_data.index[0]
