@@ -1,3 +1,6 @@
+# Parent class
+from Crawling import BaseCrawling
+
 # Communitcation to boardgame site
 import requests
 from bs4 import BeautifulSoup
@@ -9,10 +12,10 @@ import pandas as pd
 from tqdm.auto import tqdm
 
 # Constant Module
-from constants import *
+from BGConstants import *
 
 
-class BoardgameMiner:
+class BoardgameMiner(BaseCrawling):
     """Get boardgame information from BGG (boardgamegeek.com)
 
     The crawler get the following informations from BGG
@@ -30,44 +33,30 @@ class BoardgameMiner:
     """
 
     def __init__(
-        self, page_max=PAGE_MAX, base_link=BASE_LINK, api_link=API_LINK, tracking=True
+        self,
+        service=BASE_LINK,
+        api=API_LINK,
+        tracking=True,
+        page_max=PAGE_MAX,
     ):
-        self.base_link = base_link
-        self.api_link = api_link
-        self.page_max = page_max
-        self.tracking = tracking
-        self.total_info = dict()
+        super().__init__(
+            service=service,
+            api=api,
+            tracking=tracking,
+            page_max=page_max,
+            query_str=QUERY_STR,
+        )
 
-    def crawl_page(self):
-        for page in self._track(range(1, self.page_max + 1), leave=True):
-            self.total_info.update(self._crawl_single_page(page))
-
-        return self.total_info
-
-    def crawl_boardgame(self):
-        info = self._track(self.total_info, leave=False)
-        for boardgame in info:
-            if type(info) != dict:
-                info.set_postfix({"now": boardgame})
-
-            simple_info = self.total_info[boardgame]
-            uid = simple_info["uid"]
-            detail_info = self._crawl_single_boardgame(uid)
-            self.total_info[boardgame].update(detail_info)
-
-    def _crawl_single_page(self, page_num):
-        req = requests.get(f"{self.base_link}/{page_num}")
-        parser = BeautifulSoup(req.text, "html.parser")
-
+    def _parse_service_response(self, parser):
         boardgame_info = dict()
 
         for tag in self._track(parser.select(TABLE_TAG), leave=False, position=0):
-            name, description = self._crawl_single_page_row(tag)
+            name, description = self._parse_service_response_row(tag)
             boardgame_info[name] = description
 
         return boardgame_info
 
-    def _crawl_single_page_row(self, tag):
+    def _parse_service_response_row(self, tag):
         info = tag.select("a")[2]
 
         name = info.text
@@ -87,16 +76,13 @@ class BoardgameMiner:
             "uid": uid,
         }
 
-    def _crawl_single_boardgame(self, uid):
-        boardgame_info = requests.get(f"{self.api_link}/{uid}?{QUERY_STR}")
-        bg_parser = BeautifulSoup(boardgame_info.text, "html.parser")
+    def _parse_api_response(self, parser):
+        description = parser.select_one(DESCRIPTION_TAG).text
+        category = [tag.text for tag in parser.select(CATEGORY_TAG)]
+        mechanic = [tag.text for tag in parser.select(MECHANIC_TAG)]
+        theme = [tag.text for tag in parser.select(THEME_TAG)]
 
-        description = bg_parser.select_one(DESCRIPTION_TAG).text
-        category = [tag.text for tag in bg_parser.select(CATEGORY_TAG)]
-        mechanic = [tag.text for tag in bg_parser.select(MECHANIC_TAG)]
-        theme = [tag.text for tag in bg_parser.select(THEME_TAG)]
-
-        owner_num = bg_parser.select_one(OWNER_TAG).text
+        owner_num = parser.select_one(OWNER_TAG).text
 
         return {
             "description": description,
@@ -106,14 +92,12 @@ class BoardgameMiner:
             "owner_num": owner_num,
         }
 
-    def _track(self, iterable_object, **kwarg):
-        if self.tracking:
-            return tqdm(iterable_object, **kwarg)
-        return iterable_object
-
 
 class BoardGameResultShower(BoardgameMiner):
-    """The object shows the result of board game crawling in the pandas object."""
+    """DEPRECATED! get_data() function is inherited from BaseCrawling object.
+    Use get_data_frame() for BoardgameMiner instead of get_data() from BoardgameResultShower.
+
+    The object shows the result of board game crawling in the pandas object."""
 
     def __init__(self, **kwarg):
         super().__init__(**kwarg)
