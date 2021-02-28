@@ -1,48 +1,47 @@
 # Parent class
 from Crawling import BaseCrawling
 
-# Communitcation to boardgame site
-import requests
-from bs4 import BeautifulSoup
-
-# Data Frame Module
-import pandas as pd
-
-# Useful Module
-from tqdm.auto import tqdm
-
 # Constant Module
 from USRConstants import *
 
 
-class BoardgameUserMiner(BaseCrawling):
+class UserMiner(BaseCrawling):
     """Get BoardgameGeek user information from boardgamegeek.com.
 
-    Contrasts to the boardgame information, the user information is limited to gather as many as possible in sort of their popularity, else.
-    Therefore, I gather the information with the recent reviewing activity on the boardgame geek community."""
+    The crawler get the following informations from BGG
+    1. User Name
+    2. Own Game
+    3. Commented Game
+
+    Contrasts to the boardgame information, the user information is limited to gather in sort of their popularity, else.
+    Therefore, I gather the information through the recent reviewing activity on the boardgame geek community."""
 
     def __init__(
         self,
         service=BASE_LINK,
-        api=API_LINK,
+        api=OWN_GAME_API_LINK,
         tracking=True,
         page_max=PAGE_MAX,
+        query_str=QUERY_STR,
     ):
         super().__init__(
             service=service,
             api=api,
             tracking=tracking,
             page_max=page_max,
-            query_str=QUERY_STR,
+            query_str=query_str,
         )
 
     def _parse_service_response(self, parser):
         """The function does not collect any other information than user"""
         user_info = dict()
 
-        for tag in self._track(parser.select(TABLE_TAG)[1:], leave=False):
-            name = tag.select(USER_TAG)[0].text
-            user_info[name] = {"uid": name}
+        for tag in parser.select(TABLE_TAG):
+            try:
+                name = tag.select(USER_TAG)[0].text
+                user_info[name] = {"uid": name}
+            except:
+                continue
 
         return user_info
 
@@ -52,20 +51,83 @@ class BoardgameUserMiner(BaseCrawling):
         ```
         User 1: {
             Gloomhaven: {
-                comment: "~~~~~~"
+                comment: "~~~~~~",
+                rating: 4
             },
             Dominion: {
-                comment: ""
+                comment: "",
+                rating: 10,
             }
         }
         ```
         """
+        user_info = dict()
 
-        owned_item = [tag.text for tag in parser.select(BOARDGAME_TAG)]
-        commented_item = [
-            tag.select_one(BOARDGAME_TAG).text
-            for tag in parser.select(ITEM_TAG)
-            if tag.select_one(COMMENT_TAG) != None
-        ]
+        for tag in parser.select(ITEM_TAG):
+            item = tag.select_one(BOARDGAME_TAG).text
 
-        return {"own_boardgame": owned_item, "commented_boardgame": commented_item}
+            rating = self._error_treat(
+                lambda x: tag.select_one(x).get("value"), RATING_TAG, "N/A"
+            )
+            comment = self._error_treat(
+                lambda x: tag.select_one(x).text, COMMENT_TAG, ""
+            )
+
+            user_info[item] = {"rating": rating, "comment": comment}
+
+        return user_info
+
+
+class PlayHistoryMiner(UserMiner):
+    """Get User's Play History from boardgamegeek.com.
+
+    Because the gathering initial user info is same as UserMiner, the object inherits `UserMiner` object.
+    If we can collect the play history, we can embed the boardgame into the n-dim vector by item 2 vec.
+    """
+
+    def __init__(
+        self,
+        service=BASE_LINK,
+        api=PLAY_HISTORY_API_LINK,
+        tracking=True,
+        page_max=PAGE_MAX,
+        query_str_ftn=QUERY_STR_FTN,
+    ):
+        super().__init__(
+            service=service,
+            api=api,
+            tracking=tracking,
+            page_max=page_max,
+            query_str="",
+        )
+        self.api_combination = lambda uid: f"{self.api}?{query_str_ftn(uid)}"
+
+    def _parse_api_response(self, parser):
+        """The function collects the users' previous game history. The limitation of the API, I can gather only 100 recent records per user.
+        ```
+        User 1: {
+            play_history: [
+                {
+                    'Gloomhaven': '2011-01-03'
+                },
+                {
+                    'Dominion': '2011-01-04'
+                },
+                ...
+            ]
+        }
+        ```
+        """
+        play_history = list()
+
+        for tag in parser.select(PLAY_TAG):
+            segment = dict()
+
+            item = tag.select_one(BOARDGAME_NAME_TAG).get("name")
+            played_at = self._error_treat(lambda x: tag.get(x), "date", "1969-12-31")
+
+            segment[item] = played_at
+
+            play_history.append(segment)
+
+        return {"play_history": play_history}
