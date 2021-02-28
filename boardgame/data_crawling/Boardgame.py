@@ -1,16 +1,6 @@
 # Parent class
 from Crawling import BaseCrawling
 
-# Communitcation to boardgame site
-import requests
-from bs4 import BeautifulSoup
-
-# Data Frame Module
-import pandas as pd
-
-# Useful Module
-from tqdm.auto import tqdm
-
 # Constant Module
 from BGConstants import *
 
@@ -26,8 +16,6 @@ class BoardgameMiner(BaseCrawling):
     5. Theme
     6. Mechanism
     ...
-
-    If you want to crawl another information, inherit the class and modify `_crawl_single_boardgame()` function with `super()`
 
     The information is be used to the item-based recommendation system.
     """
@@ -60,8 +48,7 @@ class BoardgameMiner(BaseCrawling):
         info = tag.select("a")[2]
 
         name = info.text
-        link = info.get("href")
-        uid = link.split("/")[2]
+        uid = info.get("href").split("/")[2]
 
         try:
             simple_description = (
@@ -71,7 +58,6 @@ class BoardgameMiner(BaseCrawling):
             simple_description = ""
 
         return name, {
-            "link": link,
             "simple_description": simple_description,
             "uid": uid,
         }
@@ -91,16 +77,3 @@ class BoardgameMiner(BaseCrawling):
             "theme": theme,
             "owner_num": owner_num,
         }
-
-
-class BoardGameResultShower(BoardgameMiner):
-    """DEPRECATED! get_data() function is inherited from BaseCrawling object.
-    Use get_data_frame() for BoardgameMiner instead of get_data() from BoardgameResultShower.
-
-    The object shows the result of board game crawling in the pandas object."""
-
-    def __init__(self, **kwarg):
-        super().__init__(**kwarg)
-
-    def get_data(self) -> pd.DataFrame:
-        return pd.DataFrame(self.total_info).transpose()
