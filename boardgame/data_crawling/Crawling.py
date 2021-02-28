@@ -1,6 +1,15 @@
-from tqdm.auto import tqdm
+# Communication with Service or API
 from bs4 import BeautifulSoup
 import requests
+
+# Stop crawling temporally if the api does not work
+from time import sleep
+from random import uniform
+
+# Proceeding Visualization Module
+from tqdm.auto import tqdm
+
+# Data Represnetation Module
 import pandas as pd
 
 
@@ -13,8 +22,11 @@ class BaseCrawling:
     1) Gather basic information from SERVICE
         + The SERVICE link must have the form: {MAIN_LINK}/{PAGE_NUM}
     2) Gather specific information from API
+        + The API link must have the form: {MAIN_LINK}/{UID}?{QUERY_STR}
+        + However, some of API has the form: {MAIN_LINK}/{SUB_LINK}?user_id={UID}
+        + Therefore, if you inherit another form of api, you can modify api_combination
 
-    If you want, you can track whether the running is well-done by `tqdm` module.
+    If you want, you can track whether the running is well-done by `tqdm` module by `tracking = True`.
     The object have the private function `_track() -> Union[tqdm, iteration]` so that you can easily implement.
     """
 
@@ -27,12 +39,17 @@ class BaseCrawling:
         self.page_max = page_max
         self.query_str = query_str
         self.total_info = dict()
+        self.api_combination = lambda uid: f"{self.api}/{uid}?{self.query_str}"
+
+    def to_data_frame(self):
+        """Provide total informatino as data frame."""
+        return pd.DataFrame(self.total_info).transpose()
 
     def crawl_page(self):
         """Gather the information from the service.
         The function executes `_crawl_single_page()` locally.
         """
-        for page in self._track(range(1, self.page_max + 1), leave=True):
+        for page in self._track(range(1, self.page_max + 1)):
             self.total_info.update(self._crawl_single_page(page))
 
         return self.total_info
@@ -43,7 +60,7 @@ class BaseCrawling:
 
         Also, you **MUST** gather `uid` in `crawl_page()` stage, too.
         """
-        info = self._track(self.total_info, leave=False)
+        info = self._track(self.total_info)
 
         for item in info:
             if type(item) != dict:
@@ -67,7 +84,11 @@ class BaseCrawling:
         """Gather the information from the API.
         If you inherit the object, you should modify this function.
         """
-        req = requests.get(f"{self.api}/{uid}?{self.query_str}")
+        req = requests.get(self.api_combination(uid))
+        while req.status_code != 200:
+            sleep(uniform(1, 5))
+            req = requests.get(self.api_combination(uid))
+
         parser = BeautifulSoup(req.text, "html.parser")
 
         information = self._parse_api_response(parser)
@@ -87,5 +108,8 @@ class BaseCrawling:
             return tqdm(iterable_object, **kwarg)
         return iterable_object
 
-    def to_data_frame(self):
-        return pd.DataFrame(self.total_info).transpose()
+    def _error_treat(self, function, value, replace):
+        try:
+            return function(value)
+        except:
+            return replace
