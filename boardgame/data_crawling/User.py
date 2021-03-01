@@ -51,7 +51,7 @@ class UserMiner(BaseCrawling):
         ```
         User 1: {
             Gloomhaven: {
-                comment: "~~~~~~",
+                comment: "Gloomhaven is God Thing Boardgame!!",
                 rating: 4
             },
             Dominion: {
@@ -61,9 +61,10 @@ class UserMiner(BaseCrawling):
         }
         ```
         """
-        user_info = dict()
+        owned_item = list()
 
         for tag in parser.select(ITEM_TAG):
+            item_info = dict()
             item = tag.select_one(BOARDGAME_TAG).text
 
             rating = self._error_treat(
@@ -73,9 +74,27 @@ class UserMiner(BaseCrawling):
                 lambda x: tag.select_one(x).text, COMMENT_TAG, ""
             )
 
-            user_info[item] = {"rating": rating, "comment": comment}
+            item_info[item] = {"rating": rating, "comment": comment}
 
-        return user_info
+            owned_item.append(item_info)
+
+        return {"owned_item": owned_item}
+
+    def to_data_frame(self):
+        return self.to_data_frame_preprocess()
+
+    def to_data_frame_preprocess(self, preprocess_col="owned_item"):
+        """The UserMiner class supports automatical preprocessing stage"""
+        data_frame = super().to_data_frame()
+        data_frame = data_frame.explode(preprocess_col).dropna()
+
+        data_frame["boardgame"] = data_frame[preprocess_col].apply(
+            lambda json: list(json.keys())[0]
+        )
+        data_frame["values"] = data_frame[preprocess_col].apply(
+            lambda json: list(json.values())[0]
+        )
+        return data_frame
 
 
 class PlayHistoryMiner(UserMiner):
@@ -126,8 +145,11 @@ class PlayHistoryMiner(UserMiner):
             item = tag.select_one(BOARDGAME_NAME_TAG).get("name")
             played_at = self._error_treat(lambda x: tag.get(x), "date", "1969-12-31")
 
-            segment[item] = played_at
+            segment[item] = {"played_at": played_at}
 
             play_history.append(segment)
 
         return {"play_history": play_history}
+
+    def to_data_frame_preprocess(self):
+        return super().to_data_frame_preprocess("play_history")

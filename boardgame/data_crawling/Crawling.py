@@ -45,6 +45,9 @@ class BaseCrawling:
         """Provide total informatino as data frame."""
         return pd.DataFrame(self.total_info).transpose()
 
+    def get_keys(self):
+        return self.total_info.keys()
+
     def crawl_page(self):
         """Gather the information from the service.
         The function executes `_crawl_single_page()` locally.
@@ -54,11 +57,14 @@ class BaseCrawling:
 
         return self.total_info
 
-    def gather_detail_info(self):
+    def gather_detail_info(self, indicate_value=None):
         """Gather detail information from the service.
         If you wants to run the function, you must execute `crawl_page()` before.
 
         Also, you **MUST** gather `uid` in `crawl_page()` stage, too.
+
+        If you want to skip already gathered information, use indicate_value.
+        Once you assign indicate_value, the `gather_detail_info()` function check whether the item already have the indicate_value as a key or not
         """
         info = self._track(self.total_info)
 
@@ -67,6 +73,10 @@ class BaseCrawling:
                 info.set_postfix({"now": item})
 
             uid = self.total_info[item]["uid"]
+
+            if indicate_value in self.total_info[item].keys():
+                continue
+
             detail_info = self._call_api(uid)
 
             self.total_info[item].update(detail_info)
