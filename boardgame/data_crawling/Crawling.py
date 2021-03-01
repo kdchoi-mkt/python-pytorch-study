@@ -13,7 +13,7 @@ from tqdm.auto import tqdm
 import pandas as pd
 
 
-class BaseCrawling:
+class BaseCrawling(object):
     """The basic crawling object, especially the abstract interface.
 
     The `BasicCrawling` object would be extended using BoardgameMiner, UserMiner, etc.
