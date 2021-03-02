@@ -3,6 +3,9 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+# Procedure Visualization
+from util import TrainVisualize
+
 # Type Hinting
 import pandas as pd
 
@@ -13,7 +16,7 @@ from tqdm.auto import tqdm
 from sklearn.preprocessing import LabelEncoder
 
 
-class Item2Vec(object):
+class Item2Vec(TrainVisualize):
     """The recommendation system is also limited to the item-based Recommendation System.
     However, the system generates `meaningful vector` embedded on N dimensional vector space based on the users' played history."""
 
@@ -27,6 +30,13 @@ class Item2Vec(object):
         self.label_encoder = self._label_encode()
 
         self.item_size = len(self.item_list)
+
+        self.learning_model = nn.Sequential(
+            nn.Linear(self.item_size, self.dimension),
+            nn.Linear(self.dimension, self.item_size),
+        )
+        self.optimize_module = optim.Adam
+        self.cost_module = nn.CrossEntropyLoss
 
     def continuous_bag_of_items(self):
         """The algorithm is from CBOW(Continuous bag of words).
@@ -60,25 +70,6 @@ class Item2Vec(object):
         print(f"소실된 자료: {total_index  - len(non_zero_item)}")
         return item_tensor[non_zero_item], center_tensor[non_zero_item].long()
 
-    def training_data(self, model, input_tensor, output_tensor, **optimize_condition):
-        validation_ftn = nn.CrossEntropyLoss()
-        optimization = optim.Adam(model.parameters(), **optimize_condition)
-
-        progress_bar = tqdm(range(self.iteration))
-
-        for _ in progress_bar:
-            predict_element = model(input_tensor)
-
-            cost = validation_ftn(predict_element, output_tensor)
-
-            optimization.zero_grad()
-            cost.backward()
-            optimization.step()
-
-            progress_bar.set_postfix({"cost": cost})
-
-        return model
-
     def item_to_vector(self, optimize_condition: dict = dict()):
         """Run Item2Vec Algorithm.
 
@@ -86,21 +77,14 @@ class Item2Vec(object):
         Second, define two layer so that item_size -> embed_dim -> item_size. Note that there are no any activation function.
         Finally, use Softmax to make final report as probability. However, the calculation is automatically conducted by `torch.CrossEntropyLoss`
         """
-        self.input_to_output = nn.Sequential(
-            nn.Linear(self.item_size, self.dimension),
-            nn.Linear(self.dimension, self.item_size),
-        )
 
         input_tensor, output_tensor = self.continuous_bag_of_items()
 
-        self.input_to_output = self.training_data(
-            self.input_to_output,
+        return self.training_data(
             input_tensor,
             output_tensor,
             **optimize_condition,
         )
-
-        return self.input_to_output
 
     def _label_encode(self):
         self.label_encoder = LabelEncoder().fit(self.item_list)
