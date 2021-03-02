@@ -20,25 +20,27 @@ class DescriptionBasedRS(ItemBasedRS, TfidfVectorizer):
     def __init__(
         self,
         data_frame: pd.DataFrame,
-        description_column: str,
-        name_column: str,
+        description_col: str,
+        name_col: str,
         **kwarg,
     ) -> None:
-        self.name_col = name_column
-        self.description_col = description_column
+        self.name_col = name_col
+        self.description_col = description_col
 
         TfidfVectorizer.__init__(self, **kwarg)
         ItemBasedRS.__init__(self, base_data_frame=data_frame)
 
-    def generate_recommend_matrix(self, recommend_base_df) -> np.array:
-        return self.fit_transform(recommend_base_df[self.description_col]).toarray()
+    def generate_recommend_matrix(self) -> np.array:
+        return self.fit_transform(self.base_data_frame[self.description_col]).toarray()
 
     def construct_data_frame(self) -> pd.DataFrame:
         """The input data frame has distinct item.
         Therefore, we do not need to treat duplicate information.
         """
-        data_frame = self.base_data_frame[[self.name_col]].reset_index()
-        data_frame.columns = ["label_encoder", "name"]
+        data_frame = self.base_data_frame[
+            [self.name_col, self.description_col]
+        ].reset_index()
+        data_frame.columns = ["label_encoder", "name", "description"]
 
         return data_frame.set_index("label_encoder")
 

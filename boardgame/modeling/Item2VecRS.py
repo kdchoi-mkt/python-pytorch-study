@@ -1,6 +1,6 @@
 # Recommendation System Module
 from RecommendationSystem import ItemBasedRS
-from Item2Vec import Item2Vec
+from util import Item2Vec
 
 # Data Treatment
 import pandas as pd
@@ -12,7 +12,7 @@ class Item2VecRS(ItemBasedRS, Item2Vec):
         Item2Vec.__init__(self, data_frame[sequence_col], dimension, window, iteration)
         ItemBasedRS.__init__(self, data_frame)
 
-    def generate_recommend_matrix(self, recommend_base_df) -> np.array:
+    def generate_recommend_matrix(self) -> np.array:
         model = self.item_to_vector()
         return model[0].weight.T.detach().numpy()
 
@@ -22,7 +22,10 @@ class Item2VecRS(ItemBasedRS, Item2Vec):
         ).transpose()
         item_df["label_encoder"] = self.label_encoder.transform(item_df["name"])
         item_df = item_df.set_index(["label_encoder"])
-        return item_df
+
+        item_vector_df = pd.DataFrame(self.recommend_matrix)
+
+        return item_df.join(item_vector_df)
 
     def _find_index(self, name: str) -> int:
         return self.label_encoder.transform([name])[0]
