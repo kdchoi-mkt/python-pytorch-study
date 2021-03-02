@@ -31,7 +31,7 @@ class DescriptionBasedRS(ItemBasedRS, TfidfVectorizer):
         ItemBasedRS.__init__(self, base_data_frame=data_frame)
 
     def generate_recommend_matrix(self, recommend_base_df):
-        return self.fit_transform(recommend_base_df[self.description_col])
+        return self.fit_transform(recommend_base_df[self.description_col]).toarray()
 
     def construct_data_frame(self):
         """The input data frame has distinct item.
@@ -40,7 +40,7 @@ class DescriptionBasedRS(ItemBasedRS, TfidfVectorizer):
         data_frame = self.base_data_frame[[self.name_col]].reset_index()
         data_frame.columns = ["label_encoder", "name"]
 
-        return data_frame
+        return data_frame.set_index("label_encoder")
 
     def _find_index(self, name: str) -> int:
         if name not in self.base_data_frame[self.name_col].to_list():
