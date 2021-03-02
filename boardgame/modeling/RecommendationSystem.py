@@ -57,8 +57,11 @@ class ItemBasedRS(object):
         |------|---------------|-----|
         |  A   |       0       |     |
         | ...  |      ...      |     |
+
+        Then, set index to `label_encoder`
         """
-        return pd.DataFrame(columns=["name", "label_encoder"])
+        data = pd.DataFrame(columns=["name", "label_encoder"])
+        return data.set_index("label_encoder")
 
     def _get_similarity_bw_object_index(self, index_1: int, index_2: int) -> np.array:
         vector_1 = self.recommend_matrix[index_1].reshape(1, -1)
@@ -87,7 +90,7 @@ class ItemBasedRS(object):
         rank_vector = similar_vector.argsort()[-topn:]
         similar_vector = similar_vector[rank_vector]
 
-        similar_df = data_frame[data_frame["label_encoder"].isin(rank_vector)]
+        similar_df = data_frame.loc[rank_vector, :]
         similar_df["similarity"] = similar_vector
 
         return similar_df.sort_values(["similarity"], ascending=False)
