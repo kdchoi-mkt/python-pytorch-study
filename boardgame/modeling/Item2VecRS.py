@@ -142,6 +142,14 @@ class Item2VecRS(ItemBasedRS, Item2Vec):
         model = self.item_to_vector()
         return model[0].weight.T.detach().numpy()
 
+    def construct_data_frame(self):
+        item_df = pd.DataFrame(
+            data=[self.label_encoder.classes_], index=["name"]
+        ).transpose()
+        item_df["label_encoder"] = self.label_encoder.transform(item_df["name"])
+        item_df = item_df.set_index(["label_encoder"])
+        return item_df
+
     def _find_index(self, name: str):
         return self.label_encoder.transform([name])[0]
 
