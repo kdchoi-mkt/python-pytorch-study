@@ -1,3 +1,6 @@
+# Recommendation System Module
+from RecommendationSystem import ItemBasedRS
+
 # This Item 2 Vec mainly uses pytorch
 import torch
 import torch.nn as nn
@@ -128,6 +131,19 @@ class Item2Vec(object):
             high = len(iterable_obj)
 
         return iterable_obj[low:center] + iterable_obj[center + 1 : high + 1]
+
+
+class Item2VecRS(ItemBasedRS, Item2Vec):
+    def __init__(self, data_frame, sequence_col, dimension=5, window=3, iteration=1000):
+        Item2Vec.__init__(self, data_frame[sequence_col], dimension, window, iteration)
+        ItemBasedRS.__init__(self, data_frame)
+
+    def generate_recommend_matrix(self, recommend_base_df):
+        model = self.item_to_vector()
+        return model[0].weight.T.detach().numpy()
+
+    def _find_index(self, name: str):
+        return self.label_encoder.transform([name])[0]
 
 
 if __name__ == "__main__":
