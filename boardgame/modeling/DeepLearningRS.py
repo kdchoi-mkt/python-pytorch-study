@@ -5,33 +5,71 @@ import torch.optim as optim
 
 # Data Handle
 import numpy as np
+import pandas as pd
 
 # Procedure Visualization
-from tqdm.auto import tqdm
+from util import TrainVisualize
 
 # Label Encoding
 from sklearn.preprocessing import LabelEncoder
 
 
-class DeepLearningRS(object):
+class SkipZeroMLP(nn.Module):
+    """The model is purposed to avoid missing value problem in recommendation system.
+
+    When user did not check product P_1's preference even if he like it,
+    the optimizer and loss function learn the user dislike P_1.
+    Therefore, before the end of the calculation, the module filters the value when it is originally 0.
+    """
+
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.model = nn.Sequential(
+            nn.Linear(input_size, 256),
+            nn.LeakyReLU(),
+            nn.Linear(256, 128),
+            nn.LeakyReLU(),
+            nn.Linear(128, 32),
+            nn.LeakyReLU(),
+            nn.Linear(32, output_size),
+        )
+
+    def forward(self, input, original_result):
+        """The model also has `original` argument to exclude missing data on loss calculation"""
+        non_missing_output = (original_result > 0) * 1
+        return self.model(input) * non_missing_output
+
+
+class DeepLearningRS(TrainVisualize):
     """The collaborative filtering can be implemented by one-hidden-layer perceptron with non-activation model.
     This means that the MLP deep learning is the generalization of the collaborative filtering.
 
-    To extend the collaborative filtering into deep learning implementation totally, first I wrote the 3 Layer MLP to replace explicit feedback.
+    To extend the collaborative filtering into deep learning implementation totally,
+    first I wrote the 3 Layer MLP to replace explicit feedback.
     """
 
-    def __init__(self, data_frame, user_col, item_col, value_col, iteration=1000):
+    def __init__(
+        self,
+        data_frame: pd.DataFrame,
+        user_col: str,
+        item_col: str,
+        value_col: str,
+        iteration: int = 10000,
+    ):
         self.data_frame = data_frame
         self.user_col = user_col
         self.item_col = item_col
         self.value_col = value_col
-
         self.iteration = iteration
 
         self.label_encoding = LabelEncoder().fit(self.data_frame[user_col])
 
         self.user_num = self.data_frame[self.user_col].nunique()
         self.item_num = self.data_frame[self.item_col].nunique()
+
+        self.learning_model = SkipZeroMLP(self.user_num, self.item_num)
+        self.optimize_module = optim.Adam
+        self.cost_module = nn.MSELoss
 
     def derive_user_encoding_tensor(self):
         """This is used to input tensor"""
@@ -46,36 +84,3 @@ class DeepLearningRS(object):
         ).fillna(0)
 
         return torch.Tensor(np.array(rating_data))
-
-    def train_model(self):
-        self.model = nn.Sequential(
-            nn.Linear(self.user_num, 256),
-            nn.LeakyReLU(),
-            nn.Linear(256, 128),
-            nn.LeakyReLU(),
-            nn.Linear(128, 32),
-            nn.LeakyReLU(),
-            nn.Linear(32, self.item_num),
-        )
-
-        cost_ftn = nn.MSELoss()
-        optimization = optim.Adam(self.model.parameters())
-
-        input_tensor = self.derive_user_encoding_tensor()
-        output_tensor = self.derive_item_rating_tensor()
-
-        non_zero_matrix = (output_tensor > 0) * 1
-        progress_bar = tqdm(range(self.iteration))
-
-        for _ in progress_bar:
-            collaborate = non_zero_matrix * self.model(input_tensor)
-
-            cost = cost_ftn(collaborate, output_tensor)
-
-            optimization.zero_grad()
-            cost.backward()
-            optimization.step()
-
-            progress_bar.set_postfix({"cost": cost})
-
-        return self.model
