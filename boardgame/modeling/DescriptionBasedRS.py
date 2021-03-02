@@ -30,10 +30,10 @@ class DescriptionBasedRS(ItemBasedRS, TfidfVectorizer):
         TfidfVectorizer.__init__(self, **kwarg)
         ItemBasedRS.__init__(self, base_data_frame=data_frame)
 
-    def generate_recommend_matrix(self, recommend_base_df):
+    def generate_recommend_matrix(self, recommend_base_df) -> np.array:
         return self.fit_transform(recommend_base_df[self.description_col]).toarray()
 
-    def construct_data_frame(self):
+    def construct_data_frame(self) -> pd.DataFrame:
         """The input data frame has distinct item.
         Therefore, we do not need to treat duplicate information.
         """
