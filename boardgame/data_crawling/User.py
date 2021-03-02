@@ -2,7 +2,7 @@
 from Crawling import BaseCrawling
 
 # Constant Module
-from USRConstants import *
+from constants import *
 
 
 class UserMiner(BaseCrawling):
@@ -18,11 +18,11 @@ class UserMiner(BaseCrawling):
 
     def __init__(
         self,
-        service=BASE_LINK,
-        api=OWN_GAME_API_LINK,
+        service=REVIEW_LINK,
+        api=OG_API_LINK,
         tracking=True,
         page_max=PAGE_MAX,
-        query_str=QUERY_STR,
+        query_str=OG_QUERY_STR,
     ):
         super().__init__(
             service=service,
@@ -36,9 +36,9 @@ class UserMiner(BaseCrawling):
         """The function does not collect any other information than user"""
         user_info = dict()
 
-        for tag in parser.select(TABLE_TAG):
+        for tag in parser.select(REVIEW_TABLE_TAG):
             try:
-                name = tag.select(USER_TAG)[0].text
+                name = tag.select(USER_NAME_TAG)[0].text
                 user_info[name] = {"uid": name}
             except:
                 continue
@@ -106,11 +106,11 @@ class PlayHistoryMiner(UserMiner):
 
     def __init__(
         self,
-        service=BASE_LINK,
-        api=PLAY_HISTORY_API_LINK,
+        service=REVIEW_LINK,
+        api=PH_API_LINK,
         tracking=True,
         page_max=PAGE_MAX,
-        query_str_ftn=QUERY_STR_FTN,
+        query_str_ftn=PH_QUERY_STR_FTN,
     ):
         super().__init__(
             service=service,

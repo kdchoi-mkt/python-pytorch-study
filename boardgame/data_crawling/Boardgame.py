@@ -2,7 +2,7 @@
 from Crawling import BaseCrawling
 
 # Constant Module
-from BGConstants import *
+from constants import *
 
 
 class BoardgameMiner(BaseCrawling):
@@ -22,8 +22,8 @@ class BoardgameMiner(BaseCrawling):
 
     def __init__(
         self,
-        service=BASE_LINK,
-        api=API_LINK,
+        service=BG_BASE_LINK,
+        api=BG_API_LINK,
         tracking=True,
         page_max=PAGE_MAX,
     ):
@@ -32,13 +32,13 @@ class BoardgameMiner(BaseCrawling):
             api=api,
             tracking=tracking,
             page_max=page_max,
-            query_str=QUERY_STR,
+            query_str=BG_QUERY_STR,
         )
 
     def _parse_service_response(self, parser):
         boardgame_info = dict()
 
-        for tag in self._track(parser.select(TABLE_TAG), leave=False, position=0):
+        for tag in self._track(parser.select(BG_TABLE_TAG), leave=False, position=0):
             name, description = self._parse_service_response_row(tag)
             boardgame_info[name] = description
 
