@@ -1,0 +1,3 @@
+from data_crawling.crawling.BoardgameMiner import BoardgameMiner
+from data_crawling.crawling.PlayHistoryMiner import PlayHistoryMiner
+from data_crawling.crawling.UserMiner import UserMiner

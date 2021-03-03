@@ -132,6 +132,7 @@ dmypy.json
 *.pkl
 *.txt
 *.csv
+.DS_Store
 
 # Ignore tutorial because it is not refined
 /tutorial

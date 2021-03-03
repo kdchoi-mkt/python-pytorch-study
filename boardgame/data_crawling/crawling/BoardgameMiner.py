@@ -1,11 +1,11 @@
 # Parent class
-from Crawling import BaseCrawling
+from data_crawling.base import BaseMiner
 
 # Constant Module
-from constants import *
+from data_crawling.crawling.constants import *
 
 
-class BoardgameMiner(BaseCrawling):
+class BoardgameMiner(BaseMiner):
     """Get boardgame information from BGG (boardgamegeek.com)
 
     The crawler get the following informations from BGG

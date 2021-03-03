@@ -1,6 +1,6 @@
 # Recommendation System Module
-from RecommendationSystem import ItemBasedRS
-from util import Item2Vec
+from modeling.base import ItemBasedRS
+from modeling.util import Item2Vec
 
 # Data Treatment
 import pandas as pd

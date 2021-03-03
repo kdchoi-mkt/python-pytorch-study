@@ -4,6 +4,7 @@ import pandas as pd
 
 
 class BaseRS(object):
+    # ! ADD: Euclidean Distance
     def __init__(self, base_data_frame):
         self.base_data_frame = base_data_frame
         self.recommend_matrix = self.generate_recommend_matrix()

@@ -1,0 +1,3 @@
+from modeling.item_based.DescriptionBasedRS import DescriptionBasedRS
+from modeling.item_based.Item2VecRS import Item2VecRS
+from modeling.item_based.SkipZeroMLP import SkipZeroMLP

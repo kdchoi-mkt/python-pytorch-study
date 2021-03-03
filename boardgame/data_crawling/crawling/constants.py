@@ -30,7 +30,7 @@ BOARDGAME_TAG = "name"
 COMMENT_TAG = "comment"
 RATING_TAG = "rating"
 
-OWN_GAME_QUERY_STR = ""
+OG_QUERY_STR = ""
 COMMENT_TAG = "comment"
 
 # These Consts are used in PlayHistoryMiner
