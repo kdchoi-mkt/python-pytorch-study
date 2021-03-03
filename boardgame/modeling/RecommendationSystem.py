@@ -96,7 +96,7 @@ class CFBasedRS(BaseRS):
 
         BaseRS.__init__(self, base_data_frame=base_data_frame)
 
-    def most_prefer_object(self, user, topn) -> pd.DataFrame:
+    def most_prefer_object(self, user, topn=10) -> pd.DataFrame:
         """Return most prefer object for user from Top n."""
         index = self._find_user_index(user)
 
@@ -112,13 +112,14 @@ class CFBasedRS(BaseRS):
     def _most_prefer_object_by_index(self, index, topn) -> pd.DataFrame:
         user_vector = self.recommend_matrix[index]
 
-        rank_vector = user_vector.argsort()[:topn]
+        rank_vector = user_vector.argsort()[-topn:]
         user_vector = user_vector[rank_vector]
 
-        user_data = self.construct_data_frame().loc[rank_vector, :]
-        user_data["preference"] = user_vector
+        user_data = self.construct_data_frame().iloc[[index], rank_vector].transpose()
 
-        return user_data
+        return user_data.sort_values(
+            list(user_data.columns), ascending=False
+        ).reset_index()
 
     def _get_user_item_prefer_by_index(self, user_index, item_index) -> float:
         return self.recommend_matrix[user_index][item_index]
