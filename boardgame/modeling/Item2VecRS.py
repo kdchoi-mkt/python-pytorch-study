@@ -24,6 +24,7 @@ class Item2VecRS(ItemBasedRS, Item2Vec):
         item_df = item_df.set_index(["label_encoder"])
 
         item_vector_df = pd.DataFrame(self.recommend_matrix)
+        item_vector_df.columns = "Dimension_" + item_vector_df.columns.astype(str)
 
         return item_df.join(item_vector_df)
 
