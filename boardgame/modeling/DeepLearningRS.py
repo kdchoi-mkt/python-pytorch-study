@@ -22,8 +22,9 @@ class SkipZeroMLP(nn.Module):
     Therefore, before the end of the calculation, the module filters the value when it is originally 0.
     """
 
-    def __init__(self, input_size, output_size):
+    def __init__(self, input_size, output_size, original_result):
         super().__init__()
+        self.original_result = original_result
         self.model = nn.Sequential(
             nn.Linear(input_size, 256),
             nn.LeakyReLU(),
@@ -34,9 +35,9 @@ class SkipZeroMLP(nn.Module):
             nn.Linear(32, output_size),
         )
 
-    def forward(self, input, original_result):
+    def forward(self, input):
         """The model also has `original` argument to exclude missing data on loss calculation"""
-        non_missing_output = (original_result > 0) * 1
+        non_missing_output = (self.original_result > 0) * 1
         return self.model(input) * non_missing_output
 
 
@@ -67,10 +68,6 @@ class DeepLearningRS(TrainVisualize):
         self.user_num = self.data_frame[self.user_col].nunique()
         self.item_num = self.data_frame[self.item_col].nunique()
 
-        self.learning_model = SkipZeroMLP(self.user_num, self.item_num)
-        self.optimize_module = optim.Adam
-        self.cost_module = nn.MSELoss
-
     def derive_user_encoding_tensor(self):
         """This is used to input tensor"""
 
@@ -84,3 +81,13 @@ class DeepLearningRS(TrainVisualize):
         ).fillna(0)
 
         return torch.Tensor(np.array(rating_data))
+
+    def generate_recommend_matrix(self):
+        input_tensor = self.derive_user_encoding_tensor()
+        output_tensor = self.derive_item_rating_tensor()
+
+        self.learning_model = SkipZeroMLP(self.user_num, self.item_num, output_tensor)
+        self.optimize_module = optim.Adam
+        self.cost_module = nn.MSELoss
+
+        return self.training_data(input_tensor, output_tensor).model(input_tensor)
