@@ -61,17 +61,48 @@ class DeepLearningRS(CFBasedRS, TrainVisualize):
         value_col: str,
         iteration: int = 10000,
     ):
-        self.data_frame = data_frame
-        self.user_col = user_col
-        self.item_col = item_col
-        self.value_col = value_col
         self.iteration = iteration
 
-        self.user_label_encoding = LabelEncoder().fit(self.data_frame[user_col])
-        self.item_label_encoding = LabelEncoder().fit(self.data_frame[item_col])
+        self.user_label_encoding = LabelEncoder().fit(data_frame[user_col])
+        self.item_label_encoding = LabelEncoder().fit(data_frame[item_col])
 
-        self.user_num = self.data_frame[self.user_col].nunique()
-        self.item_num = self.data_frame[self.item_col].nunique()
+        self.user_num = data_frame[user_col].nunique()
+        self.item_num = data_frame[item_col].nunique()
+
+        CFBasedRS.__init__(
+            self,
+            base_data_frame=data_frame,
+            user_col=user_col,
+            item_col=item_col,
+            value_col=value_col,
+        )
+
+    def generate_recommend_matrix(self):
+        input_tensor = self.derive_user_encoding_tensor()
+        output_tensor = self.derive_item_rating_tensor()
+
+        self.learning_model = SkipZeroMLP(self.user_num, self.item_num, output_tensor)
+        self.optimize_module = optim.Adam
+        self.cost_module = nn.MSELoss
+
+        return (
+            self.training_data(input_tensor, output_tensor)
+            .model(input_tensor)
+            .detach()
+            .numpy()
+        )
+
+    def construct_data_frame(self):
+        data_frame = pd.DataFrame(self.recommend_matrix)
+        data_frame.index = self.user_label_encoding.inverse_transform(data_frame.index)
+        data_frame.index = pd.Series(data_frame.index, name="user")
+
+        data_frame.columns = self.item_label_encoding.inverse_transform(
+            data_frame.columns
+        )
+        data_frame.columns = pd.Series(data_frame.columns, name="item")
+
+        return data_frame
 
     def derive_user_encoding_tensor(self):
         """This is used to input tensor"""
@@ -83,21 +114,11 @@ class DeepLearningRS(CFBasedRS, TrainVisualize):
         Because data_frame.pivot() sorts index and columns automatically, we does not need to treat orders and encoding.
         (In fact, the labeling also works based on the names' order)
         """
-        rating_data = self.data_frame.pivot(
+        rating_data = self.base_data_frame.pivot(
             columns=self.item_col, index=self.user_col, values=self.value_col
         ).fillna(0)
 
         return torch.Tensor(np.array(rating_data))
-
-    def generate_recommend_matrix(self):
-        input_tensor = self.derive_user_encoding_tensor()
-        output_tensor = self.derive_item_rating_tensor()
-
-        self.learning_model = SkipZeroMLP(self.user_num, self.item_num, output_tensor)
-        self.optimize_module = optim.Adam
-        self.cost_module = nn.MSELoss
-
-        return self.training_data(input_tensor, output_tensor).model(input_tensor)
 
     def _find_user_index(self, name):
         return self.user_label_encoding.transform([name])[0]
