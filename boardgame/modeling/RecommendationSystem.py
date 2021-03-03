@@ -17,9 +17,9 @@ class ItemBasedRS(object):
     def __init__(self, base_data_frame: pd.DataFrame):
         self.base_data_frame = base_data_frame
         self.normalizer = Normalizer()
-        self.recommend_matrix = self.generate_recommend_matrix(base_data_frame)
+        self.recommend_matrix = self.generate_recommend_matrix()
 
-    def generate_recommend_matrix(self, recommend_base_df) -> np.array:
+    def generate_recommend_matrix(self) -> np.array:
         """The function is for generate recommend matrix.
         The matrix can be as TF-IDF matrix, or N-dim embedding matrix.
 
@@ -109,3 +109,44 @@ class ItemBasedRS(object):
         If vector is 2-dimensional array (matrix), then the function normalize each rows.
         """
         return self.normalizer.fit_transform(vector)
+
+
+class CFBasedRS(object):
+    """CFBasedRS is the basic recommendation system class for Collaborative Filtering based Recommendation System.
+
+    The class supports the following functions:
+    1. Users' preference for specific item
+    2. Users' preference for Top N
+    """
+
+    def __init__(self, data_frame, user_col, item_col, value_col):
+        self.base_data_frame = data_frame
+        self.user_col = user_col
+        self.item_col = item_col
+        self.value_col = value_col
+        self.recommend_matrix = self.generate_recommend_matrix()
+
+    def generate_recommend_matrix(self) -> np.array:
+        """User x Item matrix"""
+        return np.zeros(1, 1)
+
+    def most_prefer_object(self, user, topn) -> pd.DataFrame:
+        pass
+
+    def get_user_item_prefer(self, user, item) -> str:
+        pass
+
+    def construct_data_frame(self) -> pd.DataFrame:
+        return pd.DataFrame()
+
+    def _most_prefer_object_by_index(self, index, topn) -> pd.DataFrame:
+        pass
+
+    def _get_user_item_prefer_by_index(self, user_index, item_index) -> str:
+        pass
+
+    def _find_user_index(self) -> int:
+        pass
+
+    def _find_item_index(self) -> int:
+        pass
