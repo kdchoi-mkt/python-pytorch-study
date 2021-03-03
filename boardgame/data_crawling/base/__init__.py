@@ -1,1 +1,1 @@
-from data_crawling.base.BaseMiner import BaseMiner
+from .BaseMiner import BaseMiner

@@ -1,3 +1,3 @@
-from modeling.util.Item2Vec import Item2Vec
-from modeling.util.SkipZeroMLP import SkipZeroMLP
-from modeling.util.TrainingVisualization import TrainVisualize
+from .Item2Vec import Item2Vec
+from .SkipZeroMLP import SkipZeroMLP
+from .TrainingVisualization import TrainVisualize

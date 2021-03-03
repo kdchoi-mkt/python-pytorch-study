@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 # Procedure Visualization
-from modeling.util import TrainVisualize
+from .TrainingVisualization import TrainVisualize
 
 # Type Hinting
 import pandas as pd

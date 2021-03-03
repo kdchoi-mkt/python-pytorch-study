@@ -1,1 +1,3 @@
-from modeling.collaborative_filtering.DeepLearningRS import DeepLearningRS
+from .DeepLearningRS import DeepLearningRS
+
+__all__ = ["DeepLearningRS"]

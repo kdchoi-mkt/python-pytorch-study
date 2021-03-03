@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.preprocessing import Normalizer
 
 # Import Base RecommendationSystem Module
-from base.BaseRS import BaseRS
+from .BaseRS import BaseRS
 
 
 class CFBasedRS(BaseRS):

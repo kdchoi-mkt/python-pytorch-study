@@ -1,8 +1,8 @@
 # Parent class
-from data_crawling.base import BaseMiner
+from ..base import BaseMiner
 
 # Constant Module
-from data_crawling.crawling.constants import *
+from .constants import *
 
 
 class UserMiner(BaseMiner):

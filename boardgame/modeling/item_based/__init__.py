@@ -1,2 +1,4 @@
-from modeling.item_based.DescriptionBasedRS import DescriptionBasedRS
-from modeling.item_based.Item2VecRS import Item2VecRS
+from .DescriptionBasedRS import DescriptionBasedRS
+from .Item2VecRS import Item2VecRS
+
+__all__ = ["DescriptionBasedRS", "Item2VecRS"]

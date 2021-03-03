@@ -1,3 +1,5 @@
-from data_crawling.crawling.BoardgameMiner import BoardgameMiner
-from data_crawling.crawling.PlayHistoryMiner import PlayHistoryMiner
-from data_crawling.crawling.UserMiner import UserMiner
+from .BoardgameMiner import BoardgameMiner
+from .PlayHistoryMiner import PlayHistoryMiner
+from .UserMiner import UserMiner
+
+__all__ = ["BoardgameMiner", "UserMiner", "PlayHistoryMiner"]

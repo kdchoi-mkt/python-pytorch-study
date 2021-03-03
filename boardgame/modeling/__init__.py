@@ -1,4 +1,3 @@
-import modeling.base
-import modeling.util
-import modeling.item_based
-import modeling.collaborative_filtering
+from .base import BaseRS, ItemBasedRS, CFBasedRS
+from .item_based import *
+from .collaborative_filtering import *

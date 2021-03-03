@@ -1,8 +1,8 @@
 # Parent class
-from data_crawling.crawling import UserMiner
+from .UserMiner import UserMiner
 
 # Constant Module
-from data_crawling.crawling.constants import *
+from .constants import *
 
 
 class PlayHistoryMiner(UserMiner):

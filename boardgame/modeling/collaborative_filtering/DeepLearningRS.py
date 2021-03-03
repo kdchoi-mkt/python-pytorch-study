@@ -1,8 +1,8 @@
 # The model is inherited by CF based RS
-from modeling.base import CFBasedRS
+from ..base import CFBasedRS
 
 # Procedure Visualization
-from modeling.util import TrainVisualize, SkipZeroMLP
+from ..util import TrainVisualize, SkipZeroMLP
 
 # Assist from torch
 import torch

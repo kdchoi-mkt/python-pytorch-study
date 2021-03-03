@@ -1,5 +1,5 @@
 # Main Recommendation System Inherited Class
-from modeling.base import ItemBasedRS
+from ..base import ItemBasedRS
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Type Hinting
