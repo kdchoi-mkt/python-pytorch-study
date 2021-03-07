@@ -30,7 +30,7 @@ class BaseLRP(object):
         End Layer Relevance: M dim tensor
 
         Parameter Calculation
-        =====================
+        =====================z
         Weight: M x N dim Tensor
         Redistribution: N x M dim Tensor
         """

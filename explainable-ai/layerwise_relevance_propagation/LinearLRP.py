@@ -6,11 +6,11 @@ import torch.nn as nn
 from .BaseLRP import BaseLRP
 
 
-class SequentialLRP(BaseLRP):
+class LinearLRP(BaseLRP):
     """The module is implication of Layer-wise Relevance Propagation, which is a kind of explainable AI.
     When the LRP object is used, the model information should be added.
     Furthermore, the object is compatible with `torch`. Therefore if you use tensorflow or keras, you won't use the class directly.
-    Especially, the model assumed that it is constructed by nn.Sequential, and the model is trained.
+    Especially, the model assumed that it is constructed by nn.Sequential which is consisted of activation and Linear, and the model is trained.
     """
 
     def __init__(self, sequential_model: nn.Module):
