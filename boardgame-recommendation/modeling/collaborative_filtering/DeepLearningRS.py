@@ -13,7 +13,6 @@ import torch.optim as optim
 import numpy as np
 import pandas as pd
 
-
 # Label Encoding
 from sklearn.preprocessing import LabelEncoder
 
@@ -42,6 +41,9 @@ class DeepLearningRS(CFBasedRS, TrainVisualize):
         self.user_num = data_frame[user_col].nunique()
         self.item_num = data_frame[item_col].nunique()
 
+        self.optimize_module = optim.Adam
+        self.cost_module = nn.MSELoss
+
         CFBasedRS.__init__(
             self,
             base_data_frame=data_frame,
@@ -53,10 +55,8 @@ class DeepLearningRS(CFBasedRS, TrainVisualize):
     def generate_recommend_matrix(self):
         input_tensor = self.derive_user_encoding_tensor()
         output_tensor = self.derive_item_rating_tensor()
-
+        
         self.learning_model = SkipZeroMLP(self.user_num, self.item_num, output_tensor)
-        self.optimize_module = optim.Adam
-        self.cost_module = nn.MSELoss
 
         return (
             self.training_data(input_tensor, output_tensor)
