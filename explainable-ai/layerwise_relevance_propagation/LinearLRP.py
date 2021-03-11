@@ -17,23 +17,33 @@ class LinearLRP(BaseLRP):
         self.model = sequential_model
 
     def explain(self, input, epsilon=0.005):
-        """First, construct input_lists that includes input data for layerwise forward propagation.
+        """First, construct input_lists (layer value lists) that includes layers' data for layerwise forward propagation.
         Second, analyze the relevance with LRP method iteratively.
         """
-        input_lists = [input]
+        layer_value_list, relevance = self._append_forward_propagation_value(input)
+
+        return self._calculate_backward_propagation_relevance(
+            relevance, layer_value_list, self.model, epsilon
+        )
+
+    def _append_forward_propagation_value(self, input) -> tuple:
+        layer_value_lists = [input]
 
         for submodule in self.model:
             if type(submodule) == nn.Linear:
-                input_lists.append(input)
+                layer_value_lists.append(input)
             input = submodule(input)
 
-        relevance = input
+        return layer_value_lists, input
 
-        for submodule in reversed(self.model):
+    def _calculate_backward_propagation_relevance(
+        self, relevance, layer_value_list, model, epsilon
+    ):
+        for submodule in reversed(model):
             if type(submodule) == nn.Linear:
-                start_layer_input = input_lists.pop()
+                layer_value = layer_value_list.pop()
                 relevance = self._layerwise_relevance_propagation(
-                    submodule, start_layer_input, relevance, epsilon=epsilon
+                    submodule, layer_value, relevance, epsilon=epsilon
                 )
 
         return relevance
