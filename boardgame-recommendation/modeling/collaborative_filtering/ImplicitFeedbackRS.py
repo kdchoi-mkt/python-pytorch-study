@@ -1,17 +1,12 @@
 # The model is inherited by DeepLearningRS
 from .DeepLearningRS import DeepLearningRS
 
-# Use Confidence MSE Loss.
+# Use Confidence MSE Loss and ignore zero values.
 from ..util import ConfidenceMSELossModule, SkipZeroMLP
 
-# The model uses Deep Learning Framework
-import torch
-import torch.nn as nn
-import torch.optim as optim
-
-# Data Handle
-import numpy as np
+# Type Hinting
 import pandas as pd
+import numpy as np
 
 
 class ImplicitFeedbackRS(DeepLearningRS):
@@ -34,7 +29,7 @@ class ImplicitFeedbackRS(DeepLearningRS):
             iteration=iteration,
         )
 
-    def generate_recommend_matrix(self):
+    def generate_recommend_matrix(self) -> np.array:
         """In the implicit feedback recommendation system, the objective function is something changed.
 
         Let the predictive preference for given item i on user u as p_iu.

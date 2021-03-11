@@ -6,7 +6,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import numpy as np
 
-# * Item Description Based Recommendation System
 class DescriptionBasedRS(ItemBasedRS, TfidfVectorizer):
     """Description Based Recommendation System Module
     The purpose of the model is to construct recommendation system by boardgame's description.

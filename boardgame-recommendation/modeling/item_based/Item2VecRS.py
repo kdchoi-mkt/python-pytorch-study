@@ -30,8 +30,3 @@ class Item2VecRS(ItemBasedRS, Item2Vec):
 
     def _find_index(self, name: str) -> int:
         return self.label_encoder.transform([name])[0]
-
-
-if __name__ == "__main__":
-    item_2_vec = Item2Vec([[1, 1, 1, 1], [1, 2, 3], [4, 5]])
-    print(item_2_vec.item_to_vector())
